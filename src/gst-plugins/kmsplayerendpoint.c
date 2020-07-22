@@ -44,7 +44,8 @@ G_DEFINE_QUARK (APPSINK_KEY, appsink);
 #define PTS_KEY "pts-key"
 G_DEFINE_QUARK (PTS_KEY, pts);
 
-#define NETWORK_CACHE_DEFAULT 2000
+#define NETWORK_CACHE_DEFAULT 0
+#define PROTOCOLS_DEFAULT 4
 #define PORT_RANGE_DEFAULT "0-0"
 #define IS_PREROLL TRUE
 
@@ -84,6 +85,7 @@ struct _KmsPlayerEndpointPrivate
   KmsLoop *loop;
   gboolean use_encoded_media;
   gint network_cache;
+  gint protocols;
   gchar *port_range;
 
   GMutex base_time_mutex;
@@ -103,6 +105,7 @@ enum
   PROP_NETWORK_CACHE,
   PROP_PORT_RANGE,
   PROP_PIPELINE,
+  PROP_PROTOCOLS,
   N_PROPERTIES
 };
 
@@ -197,6 +200,9 @@ kms_player_endpoint_set_property (GObject * object, guint property_id,
     case PROP_NETWORK_CACHE:
       playerendpoint->priv->network_cache = g_value_get_int (value);
       break;
+    case PROP_PROTOCOLS:
+      playerendpoint->priv->protocols = g_value_get_int (value);
+      break;
     case PROP_PORT_RANGE:
       g_free (playerendpoint->priv->port_range);
       playerendpoint->priv->port_range = g_value_dup_string (value);
@@ -274,6 +280,9 @@ kms_player_endpoint_get_property (GObject * object, guint property_id,
     case PROP_NETWORK_CACHE:
       g_value_set_int (value, playerendpoint->priv->network_cache);
       break;
+    case PROP_PROTOCOLS:
+      g_value_set_int (value, playerendpoint->priv->protocols);
+      break;  
     case PROP_PORT_RANGE:
       g_value_set_string (value, playerendpoint->priv->port_range);
       break;
@@ -1105,6 +1114,12 @@ kms_player_endpoint_class_init (KmsPlayerEndpointClass * klass)
           0, G_MAXINT, NETWORK_CACHE_DEFAULT,
           G_PARAM_READWRITE | GST_PARAM_MUTABLE_READY));
 
+  g_object_class_install_property (gobject_class, PROP_PROTOCOLS,
+     g_param_spec_int ("protocols", "Protocols",
+         "The different transport methods.",
+          0, G_MAXINT, PROTOCOLS_DEFAULT,
+          G_PARAM_READWRITE | GST_PARAM_MUTABLE_READY));        
+
   g_object_class_install_property (gobject_class, PROP_PORT_RANGE,
       g_param_spec_string ("port-range", "UDP port range for RTSP client",
           "Range of ports that can be allocated when acting as RTSP client, "
@@ -1298,6 +1313,7 @@ kms_player_endpoint_uridecodebin_element_added (GstBin * bin,
         "latency", self->priv->network_cache,
         "drop-on-latency", TRUE,
         "port-range", self->priv->port_range,
+        "protocols", self->priv->protocols, 
         NULL);
   }
 }
@@ -1368,6 +1384,7 @@ kms_player_endpoint_init (KmsPlayerEndpoint * self)
   self->priv->uridecodebin =
       gst_element_factory_make ("uridecodebin", NULL);
   self->priv->network_cache = NETWORK_CACHE_DEFAULT;
+  self->priv->protocols = PROTOCOLS_DEFAULT;
   self->priv->port_range = g_strdup (PORT_RANGE_DEFAULT);
 
   self->priv->stats.probes = kms_list_new_full (g_direct_equal, g_object_unref,

@@ -39,7 +39,7 @@ public:
 
   PlayerEndpointImpl (const boost::property_tree::ptree &conf,
                       std::shared_ptr<MediaPipeline> mediaPipeline, const std::string &uri,
-                      bool useEncodedMedia, int networkCache);
+                      bool useEncodedMedia, int networkCache, int protocols);
 
   virtual ~PlayerEndpointImpl ();
 
@@ -49,7 +49,8 @@ public:
 
   virtual int64_t getPosition() override;
   virtual void setPosition (int64_t position) override;
-
+  virtual void setProtocol (int protocol);
+  virtual int getProtocol ();
   virtual std::string getElementGstreamerDot() override;
 
   /* Next methods are automatically implemented by code generator */

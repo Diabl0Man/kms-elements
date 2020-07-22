@@ -92,7 +92,14 @@
               "doc": "When using RTSP sources: Amount of milliseconds to buffer",
               "type": "int",
               "optional": true,
-              "defaultValue": 2000
+              "defaultValue": 0
+            },
+            {
+              "name": "protocols",
+              "doc": "network protocols:UDP(1), TCP(4)",
+              "type": "int",
+              "optional": true,
+              "defaultValue": 4
             }
           ]
         },
@@ -109,6 +116,11 @@
           "type": "String",
           "readOnly": true
         },
+	{
+	 "name": "protocol",
+	 "doc": "protocols UDP(1), TCP(4)",
+	 "type": "int"
+	},
         {
           "name": "position",
           "doc": "Get or set the actual position of the video in ms. .. note:: Setting the position only works for seekable videos",

@@ -104,13 +104,13 @@ void PlayerEndpointImpl::postConstructor()
 PlayerEndpointImpl::PlayerEndpointImpl (const boost::property_tree::ptree &conf,
                                         std::shared_ptr<MediaPipeline>
                                         mediaPipeline, const std::string &uri,
-                                        bool useEncodedMedia, int networkCache) : UriEndpointImpl (conf,
+                                        bool useEncodedMedia, int networkCache, int protocols) : UriEndpointImpl (conf,
                                               std::dynamic_pointer_cast<MediaObjectImpl> (mediaPipeline), FACTORY_NAME, uri)
 {
   GstElement *element = getGstreamerElement();
 
   g_object_set (G_OBJECT (element), "use-encoded-media", useEncodedMedia,
-                "network-cache", networkCache, NULL);
+                "network-cache", networkCache, "protocols", protocols, NULL);
 
   std::string portRange;
   if (getConfigValue <std::string, PlayerEndpoint> (&portRange,
@@ -190,6 +190,20 @@ void PlayerEndpointImpl::setPosition (int64_t position)
   }
 }
 
+void PlayerEndpointImpl::setProtocol (int protocol)
+{
+    g_object_set (G_OBJECT (element), "protocols", protocol, NULL);
+}
+
+int PlayerEndpointImpl::getProtocol ()
+{
+  int protocol = 0;
+
+  g_object_get (G_OBJECT (element), "protocols", &protocol, NULL);
+
+  return protocol;
+}
+
 void PlayerEndpointImpl::play ()
 {
   start();
@@ -199,10 +213,10 @@ MediaObjectImpl *
 PlayerEndpointImplFactory::createObject (const boost::property_tree::ptree
     &conf,
     std::shared_ptr<MediaPipeline> mediaPipeline, const std::string &uri,
-    bool useEncodedMedia, int networkCache) const
+    bool useEncodedMedia, int networkCache, int protocols) const
 {
   return new PlayerEndpointImpl (conf, mediaPipeline, uri, useEncodedMedia,
-                                 networkCache);
+                                 networkCache, protocols);
 }
 
 PlayerEndpointImpl::StaticConstructor PlayerEndpointImpl::staticConstructor;
